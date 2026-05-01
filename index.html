@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roblox Studio Theme Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e16;
+    --surface: #16161f;
+    --panel: #1c1c28;
+    --border: #2a2a3a;
+    --text: #c8c6d8;
+    --muted: #6a6880;
+    --accent: #7c6af0;
+    --accent2: #a78bfa;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: 56px 1fr;
+  }
+
+  header {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+  }
+
+  header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent2);
+    letter-spacing: 0.05em;
+  }
+
+  header .tag {
+    font-size: 11px;
+    background: #2a2440;
+    color: var(--accent2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  header .actions {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn:hover { background: #252535; border-color: #3a3a50; }
+
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .btn.primary:hover { background: #6a5ae0; }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 10px 4px 4px;
+  }
+
+  .color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 8px;
+    border-radius: 6px;
+    transition: background 0.1s;
+    cursor: pointer;
+  }
+
+  .color-row:hover { background: var(--panel); }
+  .color-row.active { background: #22223a; }
+
+  .color-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .color-swatch input[type="color"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    border: none;
+    padding: 0;
+  }
+
+  .color-label {
+    font-size: 12px;
+    color: var(--text);
+    flex: 1;
+    line-height: 1;
+  }
+
+  .color-hex {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* MAIN */
+  .main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .preview-tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    gap: 0;
+  }
+
+  .tab {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    padding: 14px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+
+  .preview-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .preview-area::-webkit-scrollbar { width: 4px; }
+  .preview-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .code-preview {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .code-header {
+    background: #1a1a26;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .code-body {
+    padding: 20px 20px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+    overflow-x: auto;
+  }
+
+  .code-line { display: flex; gap: 0; white-space: pre; }
+  .lnum { color: #3a3858; min-width: 32px; user-select: none; font-size: 11px; padding-top: 1px; }
+
+  .output-area { display: none; padding: 0; }
+  .output-area.active { display: block; }
+  .preview-content { display: block; }
+  .preview-content.hidden { display: none; }
+
+  .lua-output {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: #a0a0c0;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .copy-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .copy-bar span { font-size: 12px; color: var(--muted); }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #22223a;
+    border: 1px solid var(--accent);
+    color: var(--accent2);
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.2s;
+    pointer-events: none;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>STUDIO THEME EDITOR</h1>
+  <span class="tag">Luau</span>
+  <div class="actions">
+    <button class="btn" onclick="resetDefaults()">Reset</button>
+    <button class="btn primary" onclick="copyLua()">Copy Script</button>
+  </div>
+</header>
+
+<aside class="sidebar" id="sidebar"></aside>
+
+<main class="main">
+  <div class="preview-tabs">
+    <div class="tab active" onclick="switchTab('preview', this)">Preview</div>
+    <div class="tab" onclick="switchTab('output', this)">Lua Output</div>
+  </div>
+  <div class="preview-area">
+
+    <div class="preview-content" id="preview-panel">
+      <div class="code-preview" id="codePreview">
+        <div class="code-header">
+          <div class="dot" style="background:#ff5f56"></div>
+          <div class="dot" style="background:#ffbd2e"></div>
+          <div class="dot" style="background:#27c93f"></div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-left:8px;">Script.lua</span>
+        </div>
+        <div class="code-body" id="codeBody"></div>
+      </div>
+    </div>
+
+    <div class="output-area" id="output-panel">
+      <div class="copy-bar">
+        <span>Paste into Roblox Studio Command Bar</span>
+        <button class="btn" onclick="copyLua()">Copy</button>
+      </div>
+      <div class="lua-output" id="luaOutput"></div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast">Copied to clipboard!</div>
+
+<script>
+const COLORS = {
+  background:     { label: "Background",              default: "#12121c", section: "Editor" },
+  currentLine:    { label: "Current Line",             default: "#1c1c2a", section: "Editor" },
+  selection:      { label: "Selection Text",           default: "#dcdcf0", section: "Editor" },
+  selectionBg:    { label: "Selection Background",     default: "#3a2f60", section: "Editor" },
+  findBg:         { label: "Find Selection",           default: "#443560", section: "Editor" },
+  matchingBg:     { label: "Matching Word",            default: "#302848", section: "Editor" },
+  ruler:          { label: "Ruler",                    default: "#252535", section: "Editor" },
+  whitespace:     { label: "Whitespace",               default: "#2e2c44", section: "Editor" },
+  bracket:        { label: "Brackets",                 default: "#b0aec8", section: "Syntax" },
+  text:           { label: "Text",                     default: "#c8c6d8", section: "Syntax" },
+  comment:        { label: "Comment",                  default: "#585878", section: "Syntax" },
+  keyword:        { label: "Keyword",                  default: "#af6ec3", section: "Syntax" },
+  string:         { label: "String",                   default: "#a0bead", section: "Syntax" },
+  number:         { label: "Number",                   default: "#9473b4", section: "Syntax" },
+  bool:           { label: "Bool / nil",               default: "#9473b4", section: "Syntax" },
+  builtIn:        { label: "Built-in Function",        default: "#8aabcf", section: "Syntax" },
+  functionName:   { label: "Function Name",            default: "#91aac8", section: "Syntax" },
+  method:         { label: "Method",                   default: "#7d9bbe", section: "Syntax" },
+  property:       { label: "Property",                 default: "#8cafb9", section: "Syntax" },
+  self:           { label: "self",                     default: "#b95f78", section: "Syntax" },
+  operator:       { label: "Operator",                 default: "#a082b9", section: "Syntax" },
+  error:          { label: "Error",                    default: "#c3505f", section: "Diagnostics" },
+  warning:        { label: "Warning",                  default: "#c3a55a", section: "Diagnostics" },
+  todo:           { label: "TODO",                     default: "#b89a50", section: "Diagnostics" },
+};
+
+const state = {};
+Object.entries(COLORS).forEach(([k, v]) => state[k] = v.default);
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return [r, g, b];
+}
+
+function buildSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const sections = {};
+  Object.entries(COLORS).forEach(([k, v]) => {
+    if (!sections[v.section]) sections[v.section] = [];
+    sections[v.section].push([k, v]);
+  });
+
+  Object.entries(sections).forEach(([sec, items]) => {
+    const lbl = document.createElement('div');
+    lbl.className = 'section-label';
+    lbl.textContent = sec;
+    sidebar.appendChild(lbl);
+
+    items.forEach(([k, v]) => {
+      const row = document.createElement('div');
+      row.className = 'color-row';
+      row.id = 'row-' + k;
+
+      const swatch = document.createElement('div');
+      swatch.className = 'color-swatch';
+      swatch.style.background = state[k];
+
+      const input = document.createElement('input');
+      input.type = 'color';
+      input.value = state[k];
+      input.addEventListener('input', e => {
+        state[k] = e.target.value;
+        swatch.style.background = e.target.value;
+        document.getElementById('hex-' + k).textContent = e.target.value.toUpperCase();
+        renderPreview();
+        renderLua();
+      });
+
+      swatch.appendChild(input);
+
+      const label = document.createElement('div');
+      label.className = 'color-label';
+      label.textContent = v.label;
+
+      const hex = document.createElement('div');
+      hex.className = 'color-hex';
+      hex.id = 'hex-' + k;
+      hex.textContent = state[k].toUpperCase();
+
+      row.appendChild(swatch);
+      row.appendChild(label);
+      row.appendChild(hex);
+      sidebar.appendChild(row);
+    });
+  });
+}
+
+const CODE_LINES = [
+  { tokens: [['cm', '-- Player service example']] },
+  { tokens: [['kw','local '], ['tx','Players '], ['op','= '], ['bi','game'], ['op',':'], ['mt','GetService'], ['tx','('], ['st','"Players"'], ['tx',')']] },
+  { tokens: [] },
+  { tokens: [['kw','local function '], ['fn','onPlayerAdded'], ['tx','('], ['sf','player'], ['tx',')']] },
+  { tokens: [['tx','    '], ['kw','local '], ['tx','health '], ['op','= '], ['nm','100']] },
+  { tokens: [['tx','    '], ['kw','local '], ['tx','name '], ['op','= '], ['sf','player'], ['op','.'], ['pr','Name']] },
+  { tokens: [['tx','    '], ['kw','local '], ['tx','alive '], ['op','= '], ['bo','true']] },
+  { tokens: [['tx','    '], ['kw','if '], ['tx','health '], ['op','> '], ['nm','0 '], ['kw','then']] },
+  { tokens: [['tx','        '], ['bi','print'], ['tx','('], ['st','"Welcome, " '], ['op','.. '], ['tx','name'], ['tx',')']] },
+  { tokens: [['tx','    '], ['kw','end']] },
+  { tokens: [['kw','end']] },
+  { tokens: [] },
+  { tokens: [['tx','Players'], ['op','.'], ['pr','PlayerAdded'], ['op',':'], ['mt','Connect'], ['tx','('], ['fn','onPlayerAdded'], ['tx',')']] },
+  { tokens: [['er','-- !! error '], ['wa','-- TODO refactor']] },
+];
+
+const TOKEN_MAP = {
+  cm: 'comment', kw: 'keyword', tx: 'text', op: 'operator',
+  bi: 'builtIn', mt: 'method', st: 'string', nm: 'number',
+  bo: 'bool', fn: 'functionName', sf: 'self', pr: 'property',
+  br: 'bracket', er: 'error', wa: 'warning',
+};
+
+function renderPreview() {
+  const body = document.getElementById('codeBody');
+  const preview = document.getElementById('codePreview');
+  preview.style.background = state.background;
+  body.style.background = state.background;
+  body.innerHTML = '';
+
+  CODE_LINES.forEach((line, i) => {
+    const div = document.createElement('div');
+    div.className = 'code-line';
+
+    const ln = document.createElement('span');
+    ln.className = 'lnum';
+    ln.style.color = state.comment + '88';
+    ln.textContent = (i + 1).toString().padStart(2, ' ') + '  ';
+    div.appendChild(ln);
+
+    line.tokens.forEach(([type, text]) => {
+      const span = document.createElement('span');
+      span.textContent = text;
+      const colorKey = TOKEN_MAP[type] || 'text';
+      span.style.color = state[colorKey] || state.text;
+      div.appendChild(span);
+    });
+
+    body.appendChild(div);
+  });
+}
+
+const LUA_KEYS = {
+  background:   'Background Color',
+  currentLine:  'Current Line Highlight Color',
+  selection:    'Selection Color',
+  selectionBg:  'Selection Background Color',
+  findBg:       'Find Selection Background Color',
+  matchingBg:   'Matching Word Background Color',
+  ruler:        'Ruler Color',
+  whitespace:   'Whitespace Color',
+  bracket:      'Bracket Color',
+  text:         'Text Color',
+  comment:      'Comment Color',
+  keyword:      'Keyword Color',
+  string:       'String Color',
+  number:       'Number Color',
+  bool:         'Bool Color',
+  builtIn:      'Built-in Function Color',
+  functionName: 'Function Name Color',
+  method:       'Method Color',
+  property:     'Property Color',
+  self:         '"self" Color',
+  operator:     'Operator Color',
+  error:        'Error Color',
+  warning:      'Warning Color',
+  todo:         '"TODO" Color',
+};
+
+const LUA_EXTRA = {
+  keyword: ['"function" Color', '"local" Color', 'Luau Keyword Color'],
+  bool:    ['"nil" Color'],
+};
+
+function renderLua() {
+  let lines = ['local s = settings().Studio', 'local theme = {'];
+  Object.entries(LUA_KEYS).forEach(([k, luaKey]) => {
+    const [r,g,b] = hexToRgb(state[k]);
+    const pad = (n) => n.toString().padStart(3,' ');
+    lines.push(`\t["${luaKey}"] = Color3.fromRGB(${pad(r)}, ${pad(g)}, ${pad(b)}),`);
+    if (LUA_EXTRA[k]) {
+      LUA_EXTRA[k].forEach(extra => {
+        lines.push(`\t["${extra}"] = Color3.fromRGB(${pad(r)}, ${pad(g)}, ${pad(b)}),`);
+      });
+    }
+  });
+  lines.push('}');
+  lines.push('for k, v in pairs(theme) do');
+  lines.push('\tlocal ok, err = pcall(function() s[k] = v end)');
+  lines.push('\tif not ok then warn("Skipped: " .. k .. " — " .. err) end');
+  lines.push('end');
+  lines.push('print("Custom theme applied!")');
+  document.getElementById('luaOutput').textContent = lines.join('\n');
+}
+
+function getLuaText() {
+  return document.getElementById('luaOutput').textContent;
+}
+
+function copyLua() {
+  navigator.clipboard.writeText(getLuaText()).then(() => {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  });
+}
+
+function resetDefaults() {
+  Object.entries(COLORS).forEach(([k, v]) => {
+    state[k] = v.default;
+    const row = document.getElementById('row-' + k);
+    if (row) {
+      row.querySelector('.color-swatch').style.background = v.default;
+      row.querySelector('input[type=color]').value = v.default;
+      document.getElementById('hex-' + k).textContent = v.default.toUpperCase();
+    }
+  });
+  renderPreview();
+  renderLua();
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('preview-panel').style.display = tab === 'preview' ? 'block' : 'none';
+  document.getElementById('output-panel').style.display = tab === 'output' ? 'block' : 'none';
+}
+
+buildSidebar();
+renderPreview();
+renderLua();
+</script>
+</body>
+</html>
